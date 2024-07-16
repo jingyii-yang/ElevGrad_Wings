@@ -108,7 +108,7 @@ elev_bin_100coef <- function(input, tag){
   for (ii in 1:length(n_trees)){
     coef_treeii = elev_bin(treei = n_trees[[ii]], dataset = input)
     coef_treeii$treeID = ii
-    # this table will contain all coefficients from the 6 elevation bands x 4 wing metrics x 100 trees
+    # this table will contain all coefficients from the 5 elevation bands x 4 wing metrics x 100 trees
     coef_ntree = rbind(coef_ntree, coef_treeii)
   }
     saveRDS(coef_ntree, paste0('/rdsgpfs/general/user/jy419/home/_Wings_/results/SI4_elev_band_coef100_BW.4km/', tag, '.rds'))
