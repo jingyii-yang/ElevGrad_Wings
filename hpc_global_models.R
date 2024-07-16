@@ -19,9 +19,7 @@ dat = read.csv('Analy data main.csv')
   dat$Trophic.Level = ifelse(dat$Trophic.Level %in% c('Herbivore','Omnivore'), '1ry consumer', '2ry consumer')
 }
 
-
 dat$Elev = scale(dat$MAX)/2
-
 
 
 
