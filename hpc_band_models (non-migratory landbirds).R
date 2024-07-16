@@ -17,8 +17,6 @@ dat = read.csv('Analy data main.csv')
   dat$Habitat.Openness = ifelse(dat$Habitat.Openness == 3, '1.open', '0.closed')
   dat$Migration = ifelse(dat$Migration == 3, '1.migratory', '0.sedentary')
   dat$AL.index = ifelse(dat$AL.index == 3, '1.frequent', '0.infrequent')
-  
-  dat$Flight_mode = ifelse(dat$Flight_mode == 'hover', 'flap', dat$Flight_mode)
   dat$Trophic.Level = ifelse(dat$Trophic.Level %in% c('Herbivore','Omnivore'), '1ry consumer', '2ry consumer')
 }
 
