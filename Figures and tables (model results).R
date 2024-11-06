@@ -674,4 +674,192 @@ ave_100_by_group(readRDS('full (ref=flap; bw=2km).rds')) %>% plot_by_group() +
 dev.off()
 
 
+####################### Within-family comparison #########################################
+
+dat = read.csv('Analy data main.csv')
+dat$Species3 = gsub('_', ' ', dat$Species3)
+
+
+# recalculate MAX, MIN latitude from AVONET data
+{
+  dat$Max.Latitude_abs = abs(dat$Max.Latitude)
+  dat$Min.Latitude_abs = abs(dat$Min.Latitude)
+
+  dat$Max.Latitude1 = apply(dat[,c('Max.Latitude_abs', 'Min.Latitude_abs')], 1, max)
+  dat$Min.Latitude1 = apply(dat[,c('Max.Latitude_abs', 'Min.Latitude_abs')], 1, min)
+  dat$Min.Latitude1[dat$Max.Latitude * dat$Min.Latitude < 0] = 0
+}
+
+
+# translate to ebird names
+{
+  cw = read.csv('crosswalk_BT-EB.csv')
+  cw = unique(cw[,c('BirdTree.species', 'Ebird.species')]) %>% na.omit()
+  # add ebird families/orders
+  avo2 = read.csv('AVONET2_eBird.csv') %>% dplyr::select('Species2', 'Family2', 'Order2')
+  # remove duplicated info
+  cw = left_join(cw, avo2, by = c('Ebird.species' = 'Species2'))
+  cw = cw[,-2] %>% unique() %>% na.omit()
+  
+  dat = left_join(dat, cw, by=c('Species3' = 'BirdTree.species')) 
+}
+
+
+ # remove anormalous groups
+ dat = filter(dat, Migration != 3, Habitat != 'Marine')
+ 
+
+seg_plot = function(condi1, condi2, wing_metric, lab1, lab2, min_n = 3){
+
+    d1 = subset(dat, condi1)
+    d2 = subset(dat, condi2)
+    
+    t1 = d1 %>% group_by(Family2) %>% summarise(mid.hwi = median(rela.HWI, na.rm = TRUE),
+                                                mid.wa = median(rela.WA, na.rm = TRUE),
+                                                n=n(), cate = '1')
+  
+    t2 = d2 %>% group_by(Family2) %>% summarise(mid.hwi = median(rela.HWI, na.rm = TRUE),
+                                                mid.wa = median(rela.WA, na.rm = TRUE),
+                                                n=n(), cate = '2')
+    
+    dat_plot = merge(t1, t2, by = 'Family2')
+
+    # remove families with too small sample sizes
+    dat_plot$shade = ifelse(dat_plot$n.x >= min_n & dat_plot$n.y >= min_n, 1, 0)
+    dat_plot = filter(dat_plot, shade == 1)
+    
+    
+    if (wing_metric == 'HWI'){
+      
+      print(t.test(dat_plot$mid.hwi.y, dat_plot$mid.hwi.x, paired = TRUE))
+      
+      dat_plot$del = dat_plot$mid.hwi.y - dat_plot$mid.hwi.x
+      dat_plot$direction = ifelse(dat_plot$del > 0, 'solid', 'longdash')
+        
+    p = ggplot(dat_plot, aes(group = Family2)) + 
+      geom_segment(aes(x = cate.x,   y = mid.hwi.x,
+                   xend = cate.y, yend = mid.hwi.y,
+                   linetype = I(direction))) +
+      geom_point(aes(x = cate.x, y = mid.hwi.x), col = '#2837a8') + 
+      geom_point(aes(x = cate.y, y = mid.hwi.y), col = '#2837a8') + 
+      scale_x_discrete(breaks = c(1,2),labels = c(lab1, lab2)) +
+      scale_y_continuous(limits = c(-0.8, 1.5)) +
+    #  viridis::scale_color_viridis(discrete = T) +
+      labs(x = '', y = 'Relative hand-wing index', col = 'Family', size = '# of species') + 
+      theme_classic() +
+      theme(legend.position = 'none',
+            axis.text = element_text(size = 12),
+            axis.title = element_text(size = 12))
+    
+    }
+    
+    
+    if (wing_metric == 'HWA'){
+    
+      
+      print(t.test(dat_plot$mid.wa.y, dat_plot$mid.wa.x, paired = TRUE))
+      
+      
+      dat_plot$del = dat_plot$mid.wa.y - dat_plot$mid.wa.x
+      dat_plot$direction = ifelse(dat_plot$del > 0, 'solid', 'longdash')
+      
+      p = ggplot(dat_plot, aes(group = Family2)) + 
+        geom_segment(aes(x = cate.x,   y = mid.wa.x,
+                         xend = cate.y, yend = mid.wa.y,
+                         linetype = I(direction))) +
+        geom_point(aes(x = cate.x, y = mid.wa.x), col = 'coral') +
+        geom_point(aes(x = cate.y, y = mid.wa.y), col = 'coral') + 
+        scale_x_discrete(breaks = c(1,2),labels = c(lab1, lab2)) +
+        scale_y_continuous(limits = c(-0.4, 0.4)) +
+        #  viridis::scale_color_viridis(discrete = T) +
+        labs(x = '', y = 'Relative hand-wing area', col = 'Family', size = '# of species') + 
+        theme_classic() +
+        theme(legend.position = 'none',
+              axis.text = element_text(size = 12),
+              axis.title = element_text(size = 12)) +
+        annotate('text', x = 1.5,  y = 0.37, 
+               #  label = paste0('                        Non-migratory landbirds\nn=', sum(dat_plot$n.x), ' species              n=', sum(dat_plot$n.y), ' species'))
+                 label = paste0('Non-migratory landbirds\nn=', sum(dat_plot$n.x), ' species              n=', sum(dat_plot$n.y), ' species'))
+
+    }
+    return(p)
+  
+}
+
+
+### comparing [Low elevation + high latitude] versus [High elevation + low latitude]
+
+pdf('Fig 3D.pdf', width = 4.7, height = 3.2)
+seg_plot(condi1 = (dat$MAX <= 3000 & abs(dat$Min.Latitude1) >= 30 & dat$Migration %in% c(1,2)), 
+         condi2 = (dat$MAX >= 4000 & abs(dat$Max.Latitude1) <= 30 & dat$Migration %in% c(1,2)), 
+         wing_metric = 'HWI', min_n = 3,
+         lab1 = 'Low elevation\nHigh latitude', lab2 = 'High elevation\nLow latitude') 
+dev.off()
+
+pdf('Fig 3E.pdf', width = 4.7, height = 3.2)
+seg_plot(condi1 = (dat$MAX <= 3000 & abs(dat$Min.Latitude1) >= 30 & dat$Migration %in% c(1,2)), 
+         condi2 = (dat$MAX >= 4000 & abs(dat$Max.Latitude1) <= 30 & dat$Migration %in% c(1,2)), 
+         wing_metric = 'HWA', min_n = 3,
+         lab1 = 'Low elevation\nHigh latitude', lab2 = 'High elevation\nLow latitude') 
+dev.off()
+
+
+
+t.test(p$data$mid.hwi.x[p$data$shade==1], p$data$mid.hwi.y[p$data$shade==1])
+t.test(p$data$mid.wa.x[p$data$shade==1], p$data$mid.wa.y[p$data$shade==1])
+
+
+####################### Fig S1. % of migratory species across latitudes #########################################
+
+dat = read.csv('Analy data main.csv')
+
+# divide data into 10-degree wide latitudinal subsets
+
+bin_wid = 10
+
+dat$lat_bin = abs(dat$Centroid.Latitude) %/% bin_wid
+dat=filter(dat, MAX >= 4000)
+dat$clade = ifelse(dat$Order3 == 'Passeriformes' ,'asserines', 'Non-passerines')
+
+pdf('Fig. S1 migration percentage.pdf', width = 7.7, height = 3.2)
+
+non_passer = dat %>% filter(Order3 != 'Passeriformes') %>% select(all_of(c('Migration', 'lat_bin')))
+P1 = ggplot(non_passer, aes(x=lat_bin, fill=as.character(Migration))) + 
+  scale_x_continuous(breaks = seq(0, 16, by=10/bin_wid) - 0.5, labels = seq(0, 16,  by=10/bin_wid) * bin_wid) +
+  geom_bar(position = 'fill') +  
+  scale_fill_manual(values = c('#deebf7', '#9ec9e0', '#3d77a1')) +
+  labs(fill = 'Migration', x = 'Latitude', y = 'Proportion') +
+  theme_classic() +
+  theme(legend.position = 'none', axis.title = element_text(size = 12)) +
+  annotate(geom = 'text', x = 3.4, y = 1.05, col = 'grey50', size = 3.3, 
+           label = paste(table(non_passer$lat_bin)[1],'   ',
+                           table(non_passer$lat_bin)[2],'   ', 
+                           table(non_passer$lat_bin)[3],'   ', 
+                           table(non_passer$lat_bin)[4],'   ',
+                           table(non_passer$lat_bin)[5],'   ',
+                           table(non_passer$lat_bin)[6],'    ', 
+                           table(non_passer$lat_bin)[7],'     ',
+                           table(non_passer$lat_bin)[8]))
+
+passer = dat %>% filter(Order3 == 'Passeriformes') %>% select(all_of(c('Migration', 'lat_bin')))
+passer = rbind(passer, c(NA, 7))  # add an additional column to compare with non-passerines
+P2 = ggplot(passer, aes(x=lat_bin, fill=as.character(Migration))) + 
+  scale_x_continuous(breaks = seq(0, 16, by=10/bin_wid) - 0.5, labels = seq(0, 16,  by=10/bin_wid) * bin_wid) +
+  geom_bar(position = 'fill') +
+  scale_fill_manual(values = c('#deebf7', '#9ec9e0', '#3d77a1')) +
+  labs(fill = 'Migration', x = 'Latitude', y = '') +
+  theme_classic() +
+  theme(axis.title = element_text(size = 12)) +
+  annotate(geom = 'text', x = 3.45, y = 1.05, col = 'grey50', size = 3.3, 
+           label = paste(table(passer$lat_bin)[1],'   ',
+                         table(passer$lat_bin)[2],'   ', 
+                         table(passer$lat_bin)[3],'  ', 
+                         table(passer$lat_bin)[4],'  ',
+                         table(passer$lat_bin)[5],'   ',
+                         table(passer$lat_bin)[6],'   ', 
+                         table(passer$lat_bin)[7],'    ',
+                         '0'))
+
+cowplot::plot_grid(P1, P2, rel_widths = c(1, 1.25))
+dev.off()
 
