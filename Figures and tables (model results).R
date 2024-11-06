@@ -282,7 +282,7 @@ dev.off()
 ################# Supplementary analyses to Figure 3 ########################
 
 
-### Figure S5. wing length (WL) and wing width (SL) results ##########
+### Figure S8. wing length (WL) and wing width (SL) results ##########
 
 setwd("C:/Users/Jinne/OneDrive - Imperial College London/_WING/elev-r/hpc coef results/global_coefs100/")
 coefs = list.files()
@@ -380,12 +380,12 @@ table2 = rbind(table_2a, table_2b) %>% arrange(term) %>% num_tidy() %>%
 
 
 
-####### Table S3-6: absolute wing changes (without size correction) #####################
+####### Table S4-7: absolute wing changes (without size correction) #####################
 
 setwd("C:/Users/Jinne/OneDrive - Imperial College London/_WING/elev-r/hpc coef results/global_coefs100__abs/")
 coefs = list.files()
 
-## Table S3. abs HWI results (all-species model, landbird model + one line for elevation (soar) estimate)
+## Table S4. abs HWI results (all-species model, landbird model + one line for elevation (soar) estimate)
 
 HWIf = readRDS(coefs[1]) %>% pool.table(type = "all") %>% 
   mutate(mod = coefs[1], term =  factor(term, levels = c('(Intercept)', y_orders), labels = c('(Intercept)', y_labs))) %>% arrange(term)
@@ -400,10 +400,10 @@ HWIs_l = readRDS(coefs[4]) %>% pool.table(type = "all") %>%
 table_1b = rbind(HWIf_l, HWIs_l[2,]) %>% select(c(term, estimate, std.error, conf.low, conf.high, p.value, mod))
 
 table1 = rbind(table_1a, table_1b) %>% arrange(term) %>% num_tidy() %>% 
-  write.csv('../SI Tables/Table S3 absolute HWI changes (Related to figure 3).csv', row.names = F)  ## ignore the errors
+  write.csv('../SI Tables/Table S4 absolute HWI changes (Related to figure 3).csv', row.names = F)  ## ignore the errors
 
 
-## Table S4. abs HWA results (all-species model, landbird model + one line for elevation (soar) estimate)
+## Table S5. abs HWA results (all-species model, landbird model + one line for elevation (soar) estimate)
 
 WAf = readRDS(coefs[9]) %>% pool.table(type = "all") %>% 
   mutate(mod = coefs[9], term =  factor(term, levels = c('(Intercept)', y_orders), labels = c('(Intercept)', y_labs))) %>% arrange(term)
@@ -418,10 +418,10 @@ WAs_l = readRDS(coefs[12]) %>% pool.table(type = "all") %>%
 table_2b = rbind(WAf_l, WAs_l[2,]) %>% select(c(term, estimate, std.error, conf.low, conf.high, p.value, mod))
 
 table2 = rbind(table_2a, table_2b) %>% arrange(term) %>% num_tidy() %>% 
-  write.csv('../SI Tables/Table S4 absolute wing area changes (Related to figure 3).csv', row.names = F)
+  write.csv('../SI Tables/Table S5 absolute wing area changes (Related to figure 3).csv', row.names = F)
 
 
-## Table S5. abs wing length results (all-species model, landbird model + one line for elevation (soar) estimate)
+## Table S6. abs wing length results (all-species model, landbird model + one line for elevation (soar) estimate)
 
 HWIf = readRDS(coefs[13]) %>% pool.table(type = "all") %>% 
   mutate(mod = coefs[13], term =  factor(term, levels = c('(Intercept)', y_orders), labels = c('(Intercept)', y_labs))) %>% arrange(term)
@@ -436,10 +436,10 @@ HWIs_l = readRDS(coefs[16]) %>% pool.table(type = "all") %>%
 table_1b = rbind(HWIf_l, HWIs_l[2,]) %>% select(c(term, estimate, std.error, conf.low, conf.high, p.value, mod))
 
 table1 = rbind(table_1a, table_1b) %>% arrange(term) %>% num_tidy() %>% 
-  write.csv('../SI Tables/Table S5 absolute wing length changes (Related to figure 3).csv', row.names = F)  ## ignore the errors
+  write.csv('../SI Tables/Table S6 absolute wing length changes (Related to figure 3).csv', row.names = F)  ## ignore the errors
 
 
-## Table S6. abs Wing width results (all-species model, landbird model + one line for elevation (soar) estimate)
+## Table S7. abs Wing width results (all-species model, landbird model + one line for elevation (soar) estimate)
 
 WAf = readRDS(coefs[5]) %>% pool.table(type = "all") %>% 
   mutate(mod = coefs[5], term =  factor(term, levels = c('(Intercept)', y_orders), labels = c('(Intercept)', y_labs))) %>% arrange(term)
@@ -454,13 +454,13 @@ WAs_l = readRDS(coefs[8]) %>% pool.table(type = "all") %>%
 table_2b = rbind(WAf_l, WAs_l[2,]) %>% select(c(term, estimate, std.error, conf.low, conf.high, p.value, mod))
 
 table2 = rbind(table_2a, table_2b) %>% arrange(term) %>% num_tidy() %>% 
-  write.csv('../SI Tables/Table S6 absolute wing width changes (Related to figure 3).csv', row.names = F)
+  write.csv('../SI Tables/Table S7 absolute wing width changes (Related to figure 3).csv', row.names = F)
 
 
 
-############# Table S7-10. additional sensitivity analyses ###################
+############# Table S8-11. additional sensitivity analyses ###################
 
-## Table S7-8. Additional HWI results (using high-certainty data; using mean elevation)
+## Table S8-9. Additional HWI results (using high-certainty data; using mean elevation)
 
 setwd("C:/Users/Jinne/OneDrive - Imperial College London/_WING/elev-r/hpc coef results/global_coefs100_SI/")
 coefs = list.files()
@@ -469,29 +469,29 @@ coefs = list.files()
 HWI_high_cert = readRDS(coefs[1]) %>% pool.table(type = "all") %>% 
   mutate(mod = coefs[1], term =  factor(term, levels = c('(Intercept)', y_orders), labels = c('(Intercept)', y_labs))) %>% arrange(term)
 table3 = HWI_high_cert %>% select(c(term, estimate, std.error, conf.low, conf.high, p.value, mod)) %>% num_tidy() %>% 
-  write.csv('../SI Tables/Table S7 HWI results (Related to figure 3; supp models - high AL cert).csv', row.names = F)  ## ignore the errors
+  write.csv('../SI Tables/Table S8 HWI results (Related to figure 3; supp models - high AL cert).csv', row.names = F)  ## ignore the errors
 
 
 HWIf_mean_elev = readRDS(coefs[2]) %>% pool.table(type = "all") %>% 
   mutate(mod = coefs[2], term =  factor(term, levels = c('(Intercept)', y_orders), labels = c('(Intercept)', y_labs))) %>% arrange(term)
 
 table4 = HWIf_mean_elev %>% select(c(term, estimate, std.error, conf.low, conf.high, p.value, mod)) %>% num_tidy() %>% 
-  write.csv('../SI Tables/Table S8 HWI results (Related to figure 3; supp models - mean elev).csv', row.names = F)  ## ignore the errors
+  write.csv('../SI Tables/Table S9 HWI results (Related to figure 3; supp models - mean elev).csv', row.names = F)  ## ignore the errors
 
 
-## Table S9-10. Additional HWA results (using high-certainty data; using mean elevation)
+## Table S10-11. Additional HWA results (using high-certainty data; using mean elevation)
 
 WA_high_cert = readRDS(coefs[9]) %>% pool.table(type = "all") %>% 
   mutate(mod = coefs[9], term =  factor(term, levels = c('(Intercept)', y_orders), labels = c('(Intercept)', y_labs))) %>% arrange(term)
 table5 = WA_high_cert %>% select(c(term, estimate, std.error, conf.low, conf.high, p.value, mod)) %>% num_tidy() %>% 
-  write.csv('../SI Tables/Table S9 HWA results (Related to figure 3; supp models - high AL cert).csv', row.names = F)  ## ignore the errors
+  write.csv('../SI Tables/Table S10 HWA results (Related to figure 3; supp models - high AL cert).csv', row.names = F)  ## ignore the errors
 
 
 WA_mean_elev = readRDS(coefs[10]) %>% pool.table(type = "all") %>% 
   mutate(mod = coefs[10], term =  factor(term, levels = c('(Intercept)', y_orders), labels = c('(Intercept)', y_labs))) %>% arrange(term)
 
 table6 = WA_mean_elev %>% select(c(term, estimate, std.error, conf.low, conf.high, p.value, mod)) %>% num_tidy() %>% 
-  write.csv('../SI Tables/Table S10 HWA results (Related to figure 3; supp models - mean elev).csv', row.names = F)  ## ignore the errors
+  write.csv('../SI Tables/Table S11 HWA results (Related to figure 3; supp models - mean elev).csv', row.names = F)  ## ignore the errors
 
 
 
@@ -583,11 +583,11 @@ dev.off()
 
 ################# Supplementary analyses to Figure 4 ########################
 
-## Figure S3: non-migratory landbird model #######
+## Figure S7: non-migratory landbird model
 
 setwd("C:/Users/Jinne/OneDrive - Imperial College London/_WING/elev-r/hpc coef results/elev_band_coef100/")
 
-pdf('../../figures/SI/Fig. S4. elev bands (land.sedentary, 4 metrics).pdf', width = 7.2, height = 5.3)
+pdf('../../figures/SI/Fig. S7a. elev bands (land.sedentary, 4 metrics).pdf', width = 7.2, height = 5.3)
 ave_100_by_group(readRDS('land.sedentary NEW (ref=flap).rds')) %>% plot_by_group() +
   scale_x_discrete(name ="Elevation band (km)\n", 
                    breaks=as.character(unique(coef_elev$elevbin)),
@@ -602,13 +602,9 @@ ave_100_by_group(readRDS('land.sedentary NEW (ref=flap).rds')) %>% plot_by_group
 dev.off()
 
 
-## Figure S4: additional sensitivity analyses #########
+# Figure S7: using high-certainty data
 
-setwd("C:/Users/Jinne/OneDrive - Imperial College London/_WING/elev-r/hpc coef results/elev_band_coef100/")
-
-# using high-certainty data
-
-pdf('../../figures/SI/Fig. S5a. elev bands (full; high.certainty, 4 metrics).pdf', width = 6.2, height = 5.2)
+pdf('../../figures/SI/Fig. S7b. elev bands (full; high.certainty, 4 metrics).pdf', width = 6.2, height = 5.2)
 ave_100_by_group(readRDS('full (ref=flap) high.certainty.rds')) %>% plot_by_group() +
   scale_x_discrete(name ="Elevation band (km)\n", 
                    breaks=as.character(unique(coef_elev$elevbin)),
@@ -622,9 +618,9 @@ ave_100_by_group(readRDS('full (ref=flap) high.certainty.rds')) %>% plot_by_grou
 dev.off()
 
 
-# using mean elevation
+# Figure S7: using mean elevation
 
-pdf('../../figures/SI/Fig. S5b. elev bands (full; mean.elevation; 4 metrics).pdf', width = 6.2, height = 5.2)
+pdf('../../figures/SI/Fig. S7c. elev bands (full; mean.elevation; 4 metrics).pdf', width = 6.2, height = 5.2)
 ave_100_by_group(readRDS('full (ref=flap) mean.elevation (band division uses MEAN).rds')) %>% plot_by_group() +
   scale_x_discrete(name ="Elevation band (km)\n", 
                    breaks=as.character(unique(coef_elev$elevbin)),
