@@ -2,7 +2,7 @@ library(tidyverse)
 library(ggtext)
 
 
-######################## Figure S2. correlation between HWA and total aeronautical wing area ####################
+######################## Figure S3. correlation between HWA and total aeronautical wing area ####################
 
 # merge cleaned literature data on total wing area
 
@@ -131,13 +131,13 @@ dev.off()
 
 
 
-########### Fig S7-8: correlation between different elevation data methods ###############
+########### Fig S9-10: correlation between different elevation data methods ###############
 
 setwd('C:/Users/Jinne/OneDrive - Imperial College London/_WING/elev-r/data/')
 elev = read.csv('RAW elev data year around data.csv')
 
 
-####..... Fig.S7. correlation between raw data collected from different ranges ############
+####..... Fig.S9. correlation between raw data collected from different ranges ############
 
 # merge data from ref. del Hoyo (2020) and ref. White et al. (2015), both extracted data based on all known ranges of the species
 elev$all_ranges_max = ifelse(is.na(elev$new_max), elev$WB_max, elev$new_max)
@@ -147,7 +147,7 @@ elev$all_ranges_mean = (elev$all_ranges_max + elev$all_ranges_min)/2
 elev$QJ_mean.breeding. = (elev$QJ_max.breeding. + elev$QJ_min.breeding.)/2
 
 
-pdf('../../elev-r/figures/SI/Fig. S7 Correlation between raw elevation data (breeding vs combined all ranges; scatter).pdf', width = 11, height = 5)
+pdf('../../elev-r/figures/SI/Fig. S9 Correlation between raw elevation data (breeding vs combined all ranges; scatter).pdf', width = 11, height = 5)
 
 elev_plot = na.omit(elev[, c('all_ranges_max', 'QJ_max.breeding.', 'Migration')])
 elev_plot$Migration = ifelse(elev_plot$Migration == 3, 'Yes', 'No')
@@ -188,7 +188,7 @@ table(elev$Migration[!is.na(elev$all_ranges_mean) & !is.na(elev$QJ_mean.breeding
 
 
 
-####..... Fig.S8 correlation between final elevation data selected using methods 1 & 2 ####
+####..... Fig.S10 correlation between final elevation data selected using methods 1 & 2 ####
 
 ## select elevation data: 
 # Method 1: prioritise newer data sources that extracted data based on widest ranges
@@ -216,7 +216,7 @@ table(elev$Migration[!is.na(elev$all_ranges_mean) & !is.na(elev$QJ_mean.breeding
 }
 
 
-pdf('../../elev-r/figures/SI/Fig.S8 correlation between elevation measures (max 1-2, mean 1-2).pdf', width = 11, height = 5)
+pdf('../../elev-r/figures/SI/Fig.S10 correlation between elevation measures (max 1-2, mean 1-2).pdf', width = 11, height = 5)
 
 elev_plot = na.omit(elev[, c('MAX', 'MAX1')])
 cor4 = cor.test(elev_plot$MAX, elev_plot$MAX1)
@@ -245,4 +245,86 @@ pb=ggplot(elev_plot, aes(MEAN/1000, MEAN1/1000))+theme_classic()+
 
 cowplot::plot_grid(pa, pb, scale = 0.97)
 dev.off()
+
+
+
+######### Figure S11: distribution of sampled elevation across elevational bands (related to fig 4) #########
+
+dat = read.csv('Analy data main.csv')
+dat = filter(dat, Migration != 3)
+
+## assign elevation bands to each species
+{
+  dat$elevbin1 = ifelse(dat$MAX <= 3000, '0-3', 0) # the lowest MAX elev = 5m
+  dat$elevbin2 = ifelse(dat$MAX >= 1000 & dat$MAX <= 4000, '1-4', 0)
+  dat$elevbin3 = ifelse(dat$MAX >= 2000 & dat$MAX <= 5000, '2-5', 0)
+  dat$elevbin4 = ifelse(dat$MAX >= 3000 & dat$MAX <= 6000, '3-6', 0)
+  dat$elevbin5 = ifelse(dat$MAX >= 4000 & dat$MAX <= 7000, '4-7', 0)
+  dat$elevbin6 = ifelse(dat$MAX >= 5000, '5-8', 0)
+}
+
+# reformat data for easy plotting
+dat_long = rbind(dat[,c('Species3', 'Order3', 'MAX', 'MEAN', 'MIN', 'elevbin1')] %>% rename(elevbin = 'elevbin1'),
+                 dat[,c('Species3', 'Order3', 'MAX', 'MEAN', 'MIN', 'elevbin2')] %>% rename(elevbin = 'elevbin2'),
+                 dat[,c('Species3', 'Order3', 'MAX', 'MEAN', 'MIN', 'elevbin3')] %>% rename(elevbin = 'elevbin3'),
+                 dat[,c('Species3', 'Order3', 'MAX', 'MEAN', 'MIN', 'elevbin4')] %>% rename(elevbin = 'elevbin4'),
+                 dat[,c('Species3', 'Order3', 'MAX', 'MEAN', 'MIN', 'elevbin5')] %>% rename(elevbin = 'elevbin5'),
+                 dat[,c('Species3', 'Order3', 'MAX', 'MEAN', 'MIN', 'elevbin6')] %>% rename(elevbin = 'elevbin6'))
+
+dat_long = filter(dat_long, elevbin != '0')
+
+# some bands contain too many species to be plotted, randomly choose a subset of that band 
+# (this should not change the data distribution as the new sample size is still very big).
+{
+rows1 = which(dat_long$elevbin == '0-3') %>% sample(500)
+rows2 = which(dat_long$elevbin == '1-4') %>% sample(500)
+rows3 = which(dat_long$elevbin == '2-5') %>% sample(500)
+rows4 = which(dat_long$elevbin == '3-6') %>% sample(500)
+rows5 = which(dat_long$elevbin == '4-7') %>% sample(500)
+rows6 = which(dat_long$elevbin == '5-8')
+
+dat_long_sub = rbind(dat_long[rows1, ], dat_long[rows2, ], dat_long[rows3, ],
+                     dat_long[rows4, ], dat_long[rows5, ], dat_long[rows6, ])
+}
+
+dat_longer_full = pivot_longer(dat_long, cols = 3:5, names_to = 'Variables', values_to = 'Elevation')
+dat_longer_sub = pivot_longer(dat_long_sub, cols = 3:5, names_to = 'Variables', values_to = 'Elevation')
+  
+# standardise units
+dat_longer_full$Elevation = dat_longer_full$Elevation/1000
+dat_longer_sub$Elevation = dat_longer_sub$Elevation/1000
+
+
+Box_Mean <- function(x) {
+  v <- c(min(x), quantile(x, 0.25), mean(x), quantile(x, 0.75), max(x))
+  names(v) <- c("ymin", "lower", "middle", "upper", "ymax")
+  v
+}
+
+
+pdf('../figures/SI/Fig. S11 band elevation distribution.pdf', width = 9.5, height = 7)
+ggplot(data = dat_longer_full, aes(x=elevbin, y=Elevation, fill=Variables)) +
+  stat_summary(fun.data = Box_Mean, geom = "boxplot", position = position_dodge(width = 1), width = 0.7, col = 'black') + 
+  geom_point(data = dat_longer_sub, aes(col = Variables), alpha = 0.5, size = 0.5, col = 'grey70', 
+             position = position_jitterdodge(jitter.width = 0.18, jitter.height = 0.02, dodge.width = 1) ) +
+  labs(fill = '', x = 'Elevation band (km)', y = 'Elevation (km)') +
+  scale_fill_manual(values = c('#0096c7', '#8ecae6','#caf0f8' ), 
+                    labels = c('Maximum elevation', 'Mean elevation', 'Minimum elevation'))+
+  scale_y_continuous(limits = c(-0.500, 8.500)) +
+  annotate(geom = 'text', x = 3.5, y = -0.450, size = 5.1,
+           label = paste('n =', scales::comma(table(dat_long$elevbin)[1]), '        ',
+                         'n =', scales::comma(table(dat_long$elevbin)[2]), '        ',
+                         'n =', scales::comma(table(dat_long$elevbin)[3]), '         ',
+                         'n =', scales::comma(table(dat_long$elevbin)[4]), '         ',
+                         'n =', scales::comma(table(dat_long$elevbin)[5]), '         ',
+                         'n =', scales::comma(table(dat_long$elevbin)[6]))) +
+  theme_classic() +
+  theme(axis.title = element_text(size = 17),
+        axis.text = element_text(size = 15),
+        legend.position = c(0.18, 0.85),
+        legend.text = element_text(size = 13),
+        legend.key.size = unit(1, 'cm'))
+
+dev.off()
+
 
