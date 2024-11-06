@@ -12,11 +12,8 @@ n_trees <- readRDS('100 random trees.rds')
 dat = read.csv('Analy data main.csv')
 
 
-## make all categorical variables binary to compare effect sizes
+## make categorical variables binary to compare effect sizes
 {
-  dat$Habitat.Openness = ifelse(dat$Habitat.Openness == 3, '1.open', '0.closed')
-  dat$Migration = ifelse(dat$Migration == 3, '1.migratory', '0.sedentary')
-  dat$AL.index = ifelse(dat$AL.index == 3, '1.frequent', '0.infrequent')
   dat$Trophic.Level = ifelse(dat$Trophic.Level %in% c('Herbivore','Omnivore'), '1ry consumer', '2ry consumer')
 }
 
@@ -119,6 +116,7 @@ elev_bin_100coef <- function(input, tag){
 }
 
 
+
 ########  MAIN ANALYSIS (GLOBAL MODEL) #########
 
 # the full models (HWI, WA; WL, SL)
@@ -126,23 +124,29 @@ elev_bin_100coef(input = dat, tag = 'full')
 
 
 
-######  Additional supplementary analysis 1: repeat with higher certainty data  ######
+######  Supplementary analysis 1: non-migratory landbirds  ###############
+
+dat2 <- dat %>% filter(Migration != 3) %>% filter(Habitat != 'Marine')
+elev_bin_100coef(input = dat2, tag = 'land.sedentary')
+
+
+
+######  Supplementary analysis 2: retest with high certainty data  ######
 
 dat_A = filter(dat, AL_uncertainty == 'A') 
-
 elev_bin_100coef(input = dat_A, tag = 'full high.certainty')
 
 
 
+######  Supplementary analysis 3: retest with mean elevation data  ######
 
-######  Additional supplementary analysis 2: repeat with mean elevation data  ######
+dat_mean = dat
+dat_mean$Elev = scale(sqrt(dat_mean$MEAN))/2 
 
-dat$Elev = scale(dat$MEAN)/2 
-
-### Note that the current elevation band division is still based on max elevation,
-## need to re-divide the bands based on mean elevation to match the new model type.
-
-{
+## need to re-divide the bands based on mean elevation to match the new model structure.
+{# Remove existing 'elevbin' columns first
+  dat_mean = dplyr::select(dat_mean, -contains('elevbin'))
+  
   dat$elevbin1 = ifelse(dat$MEAN <= 3000, 1, 0) # the lowest MEAN elev = 2.5 m
   dat$elevbin2 = ifelse(dat$MEAN >= 1000 & dat$MEAN <= 4000, 1, 0)
   dat$elevbin3 = ifelse(dat$MEAN >= 2000 & dat$MEAN <= 5000, 1, 0)
@@ -151,5 +155,44 @@ dat$Elev = scale(dat$MEAN)/2
 
 elev_bin_100coef(input = dat, tag = 'full mean.elevation')
 
+
+
+######  Supplementary analysis 4.1: use bandwidth = 2km  ##############
+
+dat_2km = dat
+
+## re-assign elevation bands to each species
+
+{ # Remove existing 'elevbin' columns
+  dat_2km = dplyr::select(dat_2km, -contains('elevbin'))
+  
+  dat_2km$elevbin1 = ifelse(dat_2km$MAX <= 2000, 1, 0) # the lowest MAX elev = 5m
+  dat_2km$elevbin2 = ifelse(dat_2km$MAX >= 1000 & dat_2km$MAX <= 3000, 1, 0)
+  dat_2km$elevbin3 = ifelse(dat_2km$MAX >= 2000 & dat_2km$MAX <= 4000, 1, 0)
+  dat_2km$elevbin4 = ifelse(dat_2km$MAX >= 3000 & dat_2km$MAX <= 5000, 1, 0)
+  dat_2km$elevbin5 = ifelse(dat_2km$MAX >= 4000 & dat_2km$MAX <= 6000, 1, 0)
+  dat_2km$elevbin6 = ifelse(dat_2km$MAX >= 5000 & dat_2km$MAX <= 7000, 1, 0)
+  #  dat_2km$elevbin7 = ifelse(dat_2km$MAX >= 6000, 1, 0) this band contains too few species (18) so the model will not work.
+}
+elev_bin_100coef(input = dat_2km, tag = 'full (bw=2km)')
+
+
+
+######  Supplementary analysis 4.2: use bandwidth = 4km  ###############
+
+dat_4km = dat
+
+## re-assign elevation bands to each species
+
+{ # Remove existing 'elevbin' columns
+  dat_4km = dplyr::select(dat_4km, -contains('elevbin'))
+  
+  dat_4km$elevbin1 = ifelse(dat_4km$MAX <= 4000, 1, 0) # the lowest MAX elev = 5m
+  dat_4km$elevbin2 = ifelse(dat_4km$MAX >= 1000 & dat_4km$MAX <= 5000, 1, 0)
+  dat_4km$elevbin3 = ifelse(dat_4km$MAX >= 2000 & dat_4km$MAX <= 6000, 1, 0)
+  dat_4km$elevbin4 = ifelse(dat_4km$MAX >= 3000 & dat_4km$MAX <= 7000, 1, 0)
+  dat_4km$elevbin5 = ifelse(dat_4km$MAX >= 4000, 1, 0)
+}
+elev_bin_100coef(input = dat_4km, tag = 'full (bw=4km)')
 
 
