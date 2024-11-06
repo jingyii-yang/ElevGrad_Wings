@@ -740,7 +740,6 @@ seg_plot = function(condi1, condi2, wing_metric, lab1, lab2, min_n = 3){
       geom_point(aes(x = cate.y, y = mid.hwi.y), col = '#2837a8') + 
       scale_x_discrete(breaks = c(1,2),labels = c(lab1, lab2)) +
       scale_y_continuous(limits = c(-0.8, 1.5)) +
-    #  viridis::scale_color_viridis(discrete = T) +
       labs(x = '', y = 'Relative hand-wing index', col = 'Family', size = '# of species') + 
       theme_classic() +
       theme(legend.position = 'none',
@@ -767,14 +766,12 @@ seg_plot = function(condi1, condi2, wing_metric, lab1, lab2, min_n = 3){
         geom_point(aes(x = cate.y, y = mid.wa.y), col = 'coral') + 
         scale_x_discrete(breaks = c(1,2),labels = c(lab1, lab2)) +
         scale_y_continuous(limits = c(-0.4, 0.4)) +
-        #  viridis::scale_color_viridis(discrete = T) +
         labs(x = '', y = 'Relative hand-wing area', col = 'Family', size = '# of species') + 
         theme_classic() +
         theme(legend.position = 'none',
               axis.text = element_text(size = 12),
               axis.title = element_text(size = 12)) +
         annotate('text', x = 1.5,  y = 0.37, 
-               #  label = paste0('                        Non-migratory landbirds\nn=', sum(dat_plot$n.x), ' species              n=', sum(dat_plot$n.y), ' species'))
                  label = paste0('Non-migratory landbirds\nn=', sum(dat_plot$n.x), ' species              n=', sum(dat_plot$n.y), ' species'))
 
     }
