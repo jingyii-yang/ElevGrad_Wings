@@ -11,11 +11,8 @@ n_trees <- readRDS('100 random trees.rds')
 
 dat = read.csv('Analy data main.csv')
 
-## make all categorical variables binary to compare effect sizes
+## make categorical variables binary to compare effect sizes
 {
-  dat$Habitat.Openness = ifelse(dat$Habitat.Openness == 3, '1.open', '0.closed')
-  dat$Migration = ifelse(dat$Migration == 3, '1.migratory', '0.sedentary')
-  dat$AL.index = ifelse(dat$AL.index == 3, '1.frequent', '0.infrequent')
   dat$Trophic.Level = ifelse(dat$Trophic.Level %in% c('Herbivore','Omnivore'), '1ry consumer', '2ry consumer')
 }
 
@@ -41,12 +38,7 @@ res_ntree <- function(ntree=100, dataset, Y, mod_type, label){
     if (mod_type==0) {
       res_i <- phylolm(formula(paste(Y, '~', 'Elev * Flight_mode + Migration + AL.index + Lat + TempVar + Habitat.Openness + Trophic.Level')),
                        data = datree_i$data, phy = datree_i$phy, model = 'lambda')}
-    
-    # although some supplementary analyses require reduced set of predictors. Remove those predictors.
-    if (mod_type=='landbird') {
-      res_i <- phylolm(formula(paste(Y, '~', 'Elev * Flight_mode + AL.index + Lat + TempVar + Habitat.Openness + Trophic.Level')),
-                       data = datree_i$data, phy = datree_i$phy, model = 'lambda')}
-    
+        
     res[[i]] = res_i
   }
   
@@ -86,12 +78,12 @@ res_ntree(dataset = dat, Y = 'log.Sec1', label = '__abs SL (ref=flap) full', mod
 
 
 # Main sensitivity analysis: Non-migratory landbird model
-dat2 <- dat %>% filter(Migration == '0.sedentary') %>% filter(Habitat != 'Marine')
+dat2 <- dat %>% filter(Migration != 3) %>% filter(Habitat != 'Marine')
 
-res_ntree(dataset = dat2, Y = 'HWI', label = '__abs HWI (ref=flap) land.sedentary', mod_type = 'landbird') 
-res_ntree(dataset = dat2, Y = 'log.WA', label = '__abs WA (ref=flap) land.sedentary', mod_type = 'landbird')  
-res_ntree(dataset = dat2, Y = 'log.Wing.Length', label = '__abs WL (ref=flap) land.sedentary', mod_type = 'landbird') 
-res_ntree(dataset = dat2, Y = 'log.Sec1', label = '__abs SL (ref=flap) land.sedentary', mod_type = 'landbird') 
+res_ntree(dataset = dat2, Y = 'HWI', label = '__abs HWI (ref=flap) land.sedentary', mod_type = 0)  
+res_ntree(dataset = dat2, Y = 'log.WA', label = '__abs WA (ref=flap) land.sedentary', mod_type = 0) 
+res_ntree(dataset = dat2, Y = 'log.Wing.Length', label = '__abs WL (ref=flap) land.sedentary', mod_type = 0) 
+res_ntree(dataset = dat2, Y = 'log.Sec1', label = '__abs SL (ref=flap) land.sedentary', mod_type = 0) 
 
 
 
@@ -108,35 +100,10 @@ res_ntree(dataset = dat2, Y = 'log.Sec1', label = '__abs SL (ref=flap) land.sede
       
       
       # Main sensitivity analysis: Non-migratory landbird model
-      dat2 <- dat %>% filter(Migration == '0.sedentary') %>% filter(Habitat != 'Marine')
+      dat2 <- dat %>% filter(Migration != 3) %>% filter(Habitat != 'Marine')
       
-      res_ntree(dataset = dat2, Y = 'HWI', label = '__abs HWI (ref=soar) land.sedentary', mod_type = 'landbird') 
-      res_ntree(dataset = dat2, Y = 'log.WA', label = '__abs WA (ref=soar) land.sedentary', mod_type = 'landbird')  
-      res_ntree(dataset = dat2, Y = 'log.Wing.Length', label = '__abs WL (ref=soar) land.sedentary', mod_type = 'landbird') 
-      res_ntree(dataset = dat2, Y = 'log.Sec1', label = '__abs SL (ref=soar) land.sedentary', mod_type = 'landbird') 
+      res_ntree(dataset = dat2, Y = 'HWI', label = '__abs HWI (ref=soar) land.sedentary', mod_type = 0)  
+      res_ntree(dataset = dat2, Y = 'log.WA', label = '__abs WA (ref=soar) land.sedentary', mod_type = 0)  
+      res_ntree(dataset = dat2, Y = 'log.Wing.Length', label = '__abs WL (ref=soar) land.sedentary', mod_type = 0) 
+      res_ntree(dataset = dat2, Y = 'log.Sec1', label = '__abs SL (ref=soar) land.sedentary', mod_type = 0) 
       
-
-
-
-      
-######  Additional supplementary analysis 1: repeat with higher certainty data  ######
-      
-dat_A = filter(dat, AL_uncertainty == 'A') 
-
-res_ntree(dataset = dat_A, Y = 'HWI', label = '__abs HWI (ref=flap) full.high certainty', mod_type = 0)  
-res_ntree(dataset = dat_A, Y = 'log.WA', label = '__abs WA (ref=flap) full.high certainty', mod_type = 0)  
-res_ntree(dataset = dat_A, Y = 'log.Wing.Length', label = '__abs WL (ref=flap) full.high certainty', mod_type = 0) 
-res_ntree(dataset = dat_A, Y = 'log.Sec1', label = '__abs SL (ref=flap) full.high certainty', mod_type = 0) 
-
-
-
-######  Additional supplementary analysis 2: repeat with mean elevation data  ######
-
-dat_mean = dat
-dat_mean$Elev = scale(dat_mean$MEAN)/2
-
-res_ntree(dataset = dat_mean, Y = 'HWI', label = '__abs HWI (ref=flap) full.mean elevation', mod_type = 0)  
-res_ntree(dataset = dat_mean, Y = 'log.WA', label = '__abs WA (ref=flap) full.mean elevation', mod_type = 0)  
-res_ntree(dataset = dat_mean, Y = 'log.Wing.Length', label = '__abs WL (ref=flap) full.mean elevation', mod_type = 0) 
-res_ntree(dataset = dat_mean, Y = 'log.Sec1', label = '__abs SL (ref=flap) full.mean elevation', mod_type = 0) 
-
