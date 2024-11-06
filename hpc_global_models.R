@@ -32,11 +32,16 @@ res_ntree <- function(ntree=100, dataset, Y, mod_type, label){
                                         names.col = 'Species3',
                                         na.omit = FALSE)
     
-    # all full models have the same set of predictors, only response variables (Y) are different
+    # all wing models have the same set of predictors, only response variables (Y) are different
     if (mod_type==0) {
       res_i <- phylolm(formula(paste(Y, '~', 'Elev * Flight_mode + Migration + AL.index + Lat + TempVar + Habitat.Openness + log.Mass + Trophic.Level')),
                        data = datree_i$data, phy = datree_i$phy, model = 'lambda')}
-        
+
+    # to test the elevational gradient of body mass, taking log.Mass out of predictors and use as the response variable instead
+    if (mod_type=='Mass') {
+      res_i <- phylolm(formula(paste(Y, '~', 'Elev * Flight_mode + Migration + AL.index + Lat + TempVar + Habitat.Openness + Trophic.Level')),
+                       data = datree_i$data, phy = datree_i$phy, model = 'lambda')}
+         
     res[[i]] = res_i
   }
   
@@ -132,4 +137,15 @@ res_ntree(dataset = dat_mean, Y = 'HWI', label = '__HWI (ref=flap) full.mean ele
 res_ntree(dataset = dat_mean, Y = 'log.WA', label = '__WA (ref=flap) full.mean elevation', mod_type = 0)  
 res_ntree(dataset = dat_mean, Y = 'log.Wing.Length', label = '__WL (ref=flap) full.mean elevation', mod_type = 0) 
 res_ntree(dataset = dat_mean, Y = 'log.Sec1', label = '__SL (ref=flap) full.mean elevation', mod_type = 0) 
+
+
+
+####################  Elevational gradient of body mass ###################
+
+# All-species model
+res_ntree(dataset = dat, Y = 'log.Mass', label = '__mass. full', mod_type = 'Mass') 
+
+# Main sensitivity analysis: Non-migratory landbird model
+dat2 <- dat %>% filter(Migration != 3) %>% filter(Habitat != 'Marine')
+res_ntree(dataset = dat2, Y = 'log.Mass', label = '__mass. land.sedentary', mod_type = 'Mass') 
 
